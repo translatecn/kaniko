@@ -94,7 +94,7 @@ func (a *AddCommand) ExecuteCommand(config *v1.Config, buildArgs *dockerfile.Bui
 			if err != nil {
 				return errors.Wrap(err, "unpacking local tar")
 			}
-			logrus.Debugf("Added %v from local tar archive %s", extractedFiles, src)
+			logrus.Infof("Added %v from local tar archive %s", extractedFiles, src)
 			a.snapshotFiles = append(a.snapshotFiles, extractedFiles...)
 		} else {
 			unresolvedSrcs = append(unresolvedSrcs, src)

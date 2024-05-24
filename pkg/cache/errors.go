@@ -18,13 +18,6 @@ package cache
 
 import "errors"
 
-// IsAlreadyCached returns true if the supplied error is of the type AlreadyCachedErr
-// otherwise it returns false.
-func IsAlreadyCached(err error) bool {
-	var e AlreadyCachedErr
-	return errors.As(err, &e)
-}
-
 // AlreadyCachedErr is returned when the Docker image requested for caching is already
 // present in the cache.
 type AlreadyCachedErr struct {

@@ -293,7 +293,7 @@ func MakeKanikoStages(opts *config.KanikoOptions, stages []instructions.Stage, m
 		kanikoStages = append(kanikoStages, config.KanikoStage{
 			Stage:                  stage,
 			BaseImageIndex:         baseImageIndex,
-			BaseImageStoredLocally: (baseImageIndex != -1),
+			BaseImageStoredLocally: baseImageIndex != -1,
 			SaveStage:              saveStage(index, stages),
 			Final:                  index == targetStage,
 			MetaArgs:               metaArgs,

@@ -1,1 +1,0 @@
-Thank you @ggcarlosr for this awesome logo!

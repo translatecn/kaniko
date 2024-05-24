@@ -84,7 +84,7 @@ func (s *Snapshotter) TakeSnapshot(files []string, shdCheckDelete bool, forceBui
 	logrus.Info("Taking snapshot of files...")
 
 	sort.Strings(filesToAdd)
-	logrus.Debugf("Adding to layer: %v", filesToAdd)
+	logrus.Infof("Adding to layer: %v", len(filesToAdd))
 
 	// Add files to current layer.
 	for _, file := range filesToAdd {
@@ -100,7 +100,7 @@ func (s *Snapshotter) TakeSnapshot(files []string, shdCheckDelete bool, forceBui
 			return true, nil
 		})
 
-		logrus.Debugf("Deleting in layer: %v", deletedFiles)
+		logrus.Infof("Deleting in layer: %v", deletedFiles)
 		// Whiteout files in current layer.
 		for file := range deletedFiles {
 			if err := s.l.AddDelete(file); err != nil {
@@ -173,7 +173,7 @@ func (s *Snapshotter) scanFullFilesystem() ([]string, []string, error) {
 
 	s.l.Snapshot()
 
-	logrus.Debugf("Current image filesystem: %v", s.l.currentImage)
+	logrus.Infof("Current image filesystem: %v", s.l.currentImage)
 
 	changedPaths, deletedPaths := util.WalkFS(s.directory, s.l.GetCurrentPaths(), s.l.CheckFileChange)
 	timer := timing.Start("Resolving Paths")
@@ -185,14 +185,14 @@ func (s *Snapshotter) scanFullFilesystem() ([]string, []string, error) {
 	}
 	for _, path := range resolvedFiles {
 		if util.CheckIgnoreList(path) {
-			logrus.Debugf("Not adding %s to layer, as it's ignored", path)
+			logrus.Infof("Not adding %s to layer, as it's ignored", path)
 			continue
 		}
 		filesToAdd = append(filesToAdd, path)
 	}
 
-	logrus.Debugf("Adding to layer: %v", filesToAdd)
-	logrus.Debugf("Deleting in layer: %v", deletedPaths)
+	logrus.Infof("Adding to layer: %v", len(filesToAdd))
+	logrus.Infof("Deleting in layer: %v", len(deletedPaths))
 
 	// Add files to the layered map
 	for _, file := range filesToAdd {
@@ -222,7 +222,7 @@ func removeObsoleteWhiteouts(deletedFiles map[string]struct{}) (filesToWhiteout 
 		// Only add the whiteout if the directory for the file still exists.
 		dir := filepath.Dir(path)
 		if _, ok := deletedFiles[dir]; !ok {
-			logrus.Tracef("Adding whiteout for %s", path)
+			logrus.Warnf("Adding whiteout for %s", path)
 			filesToWhiteout = append(filesToWhiteout, path)
 		}
 	}

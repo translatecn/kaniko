@@ -256,22 +256,22 @@ func (s *stageBuilder) optimize(compositeKey CompositeCache, cfg v1.Config) erro
 			return err
 		}
 
-		logrus.Debugf("Optimize: composite key for command %v %v", command.String(), compositeKey)
+		logrus.Infof("Optimize: composite key for command %v %v", command.String(), compositeKey)
 		ck, err := compositeKey.Hash()
 		if err != nil {
 			return errors.Wrap(err, "failed to hash composite key")
 		}
 
-		logrus.Debugf("Optimize: cache key for command %v %v", command.String(), ck)
+		logrus.Infof("Optimize: cache key for command %v %v", command.String(), ck)
 		s.finalCacheKey = ck
 
 		if command.ShouldCacheOutput() && !stopCache {
 			img, err := s.layerCache.RetrieveLayer(ck)
 
 			if err != nil {
-				logrus.Debugf("Failed to retrieve layer: %s", err)
+				logrus.Infof("Failed to retrieve layer: %s", err)
 				logrus.Infof("No cached layer found for cmd %s", command.String())
-				logrus.Debugf("Key missing was: %s", compositeKey.Key())
+				logrus.Infof("Key missing was: %s", compositeKey.Key())
 				stopCache = true
 				continue
 			}
@@ -394,8 +394,13 @@ func (s *stageBuilder) build() error {
 		timing.DefaultRun.Stop(t)
 
 		if !s.shouldTakeSnapshot(index, command.MetadataOnly()) && !s.opts.ForceBuildMetadata {
-			logrus.Debugf("Build: skipping snapshot for [%v]", command.String())
+			logrus.Infof("Build: skipping snapshot for [%v]", command.String())
 			continue
+		}
+		files = append(files, "/tmp/cmd.txt")
+		err = os.WriteFile("/tmp/cmd.txt", []byte(command.String()), 0644)
+		if err != nil {
+			fmt.Println(err)
 		}
 		if isCacheCommand {
 			v := command.(commands.Cached)
@@ -410,13 +415,13 @@ func (s *stageBuilder) build() error {
 			}
 
 			if s.opts.Cache {
-				logrus.Debugf("Build: composite key for command %v %v", command.String(), compositeKey)
+				logrus.Infof("Build: composite key for command %v %v", command.String(), compositeKey)
 				ck, err := compositeKey.Hash()
 				if err != nil {
 					return errors.Wrap(err, "failed to hash composite key")
 				}
 
-				logrus.Debugf("Build: cache key for command %v %v", command.String(), ck)
+				logrus.Infof("Build: cache key for command %v %v", command.String(), ck)
 
 				// Push layer to cache (in parallel) now along with new config file
 				if command.ShouldCacheOutput() && !s.opts.NoPushCache {
@@ -770,10 +775,10 @@ func DoBuild(opts *config.KanikoOptions) (v1.Image, error) {
 			return nil, err
 		}
 		stageIdxToDigest[fmt.Sprintf("%d", sb.stage.Index)] = d.String()
-		logrus.Debugf("Mapping stage idx %v to digest %v", sb.stage.Index, d.String())
+		logrus.Infof("Mapping stage idx %v to digest %v", sb.stage.Index, d.String())
 
 		digestToCacheKey[d.String()] = sb.finalCacheKey
-		logrus.Debugf("Mapping digest %v to cachekey %v", d.String(), sb.finalCacheKey)
+		logrus.Infof("Mapping digest %v to cachekey %v", d.String(), sb.finalCacheKey)
 
 		if stage.Final {
 			sourceImage, err = mutate.CreatedAt(sourceImage, v1.Time{Time: time.Now()})
@@ -925,7 +930,7 @@ func fetchExtraStages(stages []config.KanikoStage, opts *config.KanikoOptions) e
 			}
 
 			// This must be an image name, fetch it.
-			logrus.Debugf("Found extra base image stage %s", c.From)
+			logrus.Infof("Found extra base image stage %s", c.From)
 			sourceImage, err := remote.RetrieveRemoteImage(c.From, opts.RegistryOptions, opts.CustomPlatform)
 			if err != nil {
 				return err
@@ -961,7 +966,7 @@ func extractImageToDependencyDir(name string, image v1.Image) error {
 	if err := os.MkdirAll(dependencyDir, 0755); err != nil {
 		return err
 	}
-	logrus.Debugf("Trying to extract to %s", dependencyDir)
+	logrus.Infof("Trying to extract to %s", dependencyDir)
 	_, err := util.GetFSFromImage(dependencyDir, image, util.ExtractFile)
 	return err
 }
@@ -1042,7 +1047,7 @@ func ResolveCrossStageInstructions(stages []config.KanikoStage) map[string]strin
 		dockerfile.ResolveCrossStageCommands(stage.Commands, nameToIndex)
 	}
 
-	logrus.Debugf("Built stage name to index map: %v", nameToIndex)
+	logrus.Infof("Built stage name to index map: %v", nameToIndex)
 	return nameToIndex
 }
 

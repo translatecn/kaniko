@@ -50,7 +50,7 @@ func ResolveEnvironmentReplacementList(values, envs []string, isFilepath bool) (
 	var resolvedValues []string
 	for _, value := range values {
 		resolved, err := ResolveEnvironmentReplacement(value, envs, isFilepath)
-		logrus.Debugf("Resolved %s to %s", value, resolved)
+		logrus.Infof("Resolved %s to %s", value, resolved)
 		if err != nil {
 			return nil, err
 		}
@@ -136,7 +136,7 @@ func ResolveSources(srcs []string, root string) ([]string, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "matching sources")
 	}
-	logrus.Debugf("Resolved sources to %v", resolved)
+	logrus.Infof("Resolved sources to %v", resolved)
 	return resolved, nil
 }
 
@@ -337,7 +337,7 @@ Loop:
 		for index, kvp := range kvps {
 			// If key exists, replace the KeyValuePair...
 			if kvp.Key == newEnv.Key {
-				logrus.Debugf("Replacing environment variable %v with %v in config", kvp, newEnv)
+				logrus.Infof("Replacing environment variable %v with %v in config", kvp, newEnv)
 				kvps[index] = newEnv
 				continue Loop
 			}

@@ -32,7 +32,6 @@ import (
 	"github.com/GoogleContainerTools/kaniko/pkg/creds"
 	"github.com/GoogleContainerTools/kaniko/pkg/timing"
 	"github.com/GoogleContainerTools/kaniko/pkg/util"
-	"github.com/GoogleContainerTools/kaniko/pkg/version"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -73,7 +72,7 @@ var (
 )
 
 func (w *withUserAgent) RoundTrip(r *http.Request) (*http.Response, error) {
-	ua := []string{fmt.Sprintf("kaniko/%s", version.Version())}
+	var ua []string
 	if upstream := os.Getenv(UpstreamClientUaKey); upstream != "" {
 		ua = append(ua, upstream)
 	}
@@ -83,59 +82,8 @@ func (w *withUserAgent) RoundTrip(r *http.Request) (*http.Response, error) {
 
 // for testing
 var (
-	newOsFs                   = afero.NewOsFs()
-	checkRemotePushPermission = remote.CheckPushPermission
+	newOsFs = afero.NewOsFs()
 )
-
-// CheckPushPermissions checks that the configured credentials can be used to
-// push to every specified destination.
-func CheckPushPermissions(opts *config.KanikoOptions) error {
-	targets := opts.Destinations
-	// When no push and no push cache are set, we don't need to check permissions
-	if opts.SkipPushPermissionCheck {
-		targets = []string{}
-	} else if opts.NoPush && opts.NoPushCache {
-		targets = []string{}
-	} else if opts.NoPush && !opts.NoPushCache {
-		// When no push is set, we want to check permissions for the cache repo
-		// instead of the destinations
-		if isOCILayout(opts.CacheRepo) {
-			targets = []string{} // no need to check push permissions if we're just writing to disk
-		} else {
-			targets = []string{opts.CacheRepo}
-		}
-	}
-
-	checked := map[string]bool{}
-	for _, destination := range targets {
-		destRef, err := name.NewTag(destination, name.WeakValidation)
-		if err != nil {
-			return errors.Wrap(err, "getting tag for destination")
-		}
-		if checked[destRef.Context().String()] {
-			continue
-		}
-
-		registryName := destRef.Repository.Registry.Name()
-		if opts.Insecure || opts.InsecureRegistries.Contains(registryName) {
-			newReg, err := name.NewRegistry(registryName, name.WeakValidation, name.Insecure)
-			if err != nil {
-				return errors.Wrap(err, "getting new insecure registry")
-			}
-			destRef.Repository.Registry = newReg
-		}
-		rt, err := util.MakeTransport(opts.RegistryOptions, registryName)
-		if err != nil {
-			return errors.Wrapf(err, "making transport for registry %q", registryName)
-		}
-		tr := newRetry(rt)
-		if err := checkRemotePushPermission(destRef, creds.GetKeychain(), tr); err != nil {
-			return errors.Wrapf(err, "checking push permission for %q", destRef)
-		}
-		checked[destRef.Context().String()] = true
-	}
-	return nil
-}
 
 func getDigest(image v1.Image) ([]byte, error) {
 	digest, err := image.Digest()
@@ -160,10 +108,10 @@ func writeDigestFile(path string, digestByteArray []byte) error {
 	parentDir := filepath.Dir(path)
 	if _, err := os.Stat(parentDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(parentDir, 0700); err != nil {
-			logrus.Debugf("Error creating %s, %s", parentDir, err)
+			logrus.Infof("Error creating %s, %s", parentDir, err)
 			return err
 		}
-		logrus.Tracef("Created directory %v", parentDir)
+		logrus.Warnf("Created directory %v", parentDir)
 	}
 	return os.WriteFile(path, digestByteArray, 0644)
 }

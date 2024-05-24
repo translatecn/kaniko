@@ -53,7 +53,7 @@ func (c *CopyCommand) ExecuteCommand(config *v1.Config, buildArgs *dockerfile.Bu
 
 	replacementEnvs := buildArgs.ReplacementEnvs(config.Env)
 	uid, gid, err := getUserGroup(c.cmd.Chown, replacementEnvs)
-	logrus.Debugf("found uid %v and gid %v for chown string %v", uid, gid, c.cmd.Chown)
+	logrus.Infof("found uid %v and gid %v for chown string %v", uid, gid, c.cmd.Chown)
 	if err != nil {
 		return errors.Wrap(err, "getting user group from chown")
 	}
@@ -198,7 +198,7 @@ func (cr *CachingCopyCommand) ExecuteCommand(config *v1.Config, buildArgs *docke
 	cr.layer = layers[0]
 	cr.extractedFiles, err = util.GetFSFromLayers(kConfig.RootDir, layers, util.ExtractFunc(cr.extractFn), util.IncludeWhiteout())
 
-	logrus.Debugf("ExtractedFiles: %s", cr.extractedFiles)
+	logrus.Infof("ExtractedFiles: %s", cr.extractedFiles)
 	if err != nil {
 		return errors.Wrap(err, "extracting fs from image")
 	}
@@ -212,8 +212,8 @@ func (cr *CachingCopyCommand) FilesUsedFromContext(config *v1.Config, buildArgs 
 
 func (cr *CachingCopyCommand) FilesToSnapshot() []string {
 	f := cr.extractedFiles
-	logrus.Debugf("%d files extracted by caching copy command", len(f))
-	logrus.Tracef("Extracted files: %s", f)
+	logrus.Infof("%d files extracted by caching copy command", len(f))
+	logrus.Warnf("Extracted files: %s", f)
 
 	return f
 }
@@ -266,7 +266,7 @@ func resolveIfSymlink(destPath string) (string, error) {
 	}
 
 	if destPath != newPath {
-		logrus.Tracef("Updating destination path from %v to %v due to symlink", destPath, newPath)
+		logrus.Warnf("Updating destination path from %v to %v due to symlink", destPath, newPath)
 	}
 
 	return filepath.Clean(newPath), nil
@@ -295,7 +295,7 @@ func copyCmdFilesUsedFromContext(
 		files = append(files, fullPath)
 	}
 
-	logrus.Debugf("Using files from context: %v", files)
+	logrus.Infof("Using files from context: %v", files)
 
 	return files, nil
 }

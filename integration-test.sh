@@ -1,1 +1,0 @@
-scripts/integration-test.sh

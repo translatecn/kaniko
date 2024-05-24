@@ -35,14 +35,14 @@ import (
 // output set.
 // * Add all ancestors of each path to the output set.
 func ResolvePaths(paths []string, wl []util.IgnoreListEntry) (pathsToAdd []string, err error) {
-	logrus.Tracef("Resolving paths %s", paths)
+	logrus.Warnf("Resolving paths %s", paths)
 
 	fileSet := make(map[string]bool)
 
 	for _, f := range paths {
 		// If the given path is part of the ignorelist ignore it
 		if util.IsInProvidedIgnoreList(f, wl) {
-			logrus.Debugf("Path %s is in list to ignore, ignoring it", f)
+			logrus.Infof("Path %s is in list to ignore, ignoring it", f)
 			continue
 		}
 
@@ -52,7 +52,7 @@ func ResolvePaths(paths []string, wl []util.IgnoreListEntry) (pathsToAdd []strin
 		}
 
 		if f != link {
-			logrus.Tracef("Updated link %s to %s", f, link)
+			logrus.Warnf("Updated link %s to %s", f, link)
 		}
 
 		if !fileSet[link] {
@@ -71,17 +71,17 @@ func ResolvePaths(paths []string, wl []util.IgnoreListEntry) (pathsToAdd []strin
 				return
 			}
 
-			logrus.Tracef("Symlink path %s, target does not exist", f)
+			logrus.Warnf("Symlink path %s, target does not exist", f)
 			continue
 		}
 		if f != evaled {
-			logrus.Tracef("Resolved symlink %s to %s", f, evaled)
+			logrus.Warnf("Resolved symlink %s to %s", f, evaled)
 		}
 
 		// If the given path is a symlink and the target is part of the ignorelist
 		// ignore the target
 		if util.CheckCleanedPathAgainstProvidedIgnoreList(evaled, wl) {
-			logrus.Debugf("Path %s is ignored, ignoring it", evaled)
+			logrus.Infof("Path %s is ignored, ignoring it", evaled)
 			continue
 		}
 

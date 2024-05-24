@@ -63,14 +63,14 @@ func (w *WorkdirCommand) ExecuteCommand(config *v1.Config, buildArgs *dockerfile
 		uid, gid := int64(-1), int64(-1)
 
 		if config.User != "" {
-			logrus.Debugf("Fetching uid and gid for USER '%s'", config.User)
+			logrus.Infof("Fetching uid and gid for USER '%s'", config.User)
 			uid, gid, err = util.GetUserGroup(config.User, replacementEnvs)
 			if err != nil {
 				return errors.Wrapf(err, "identifying uid and gid for user %s", config.User)
 			}
 		}
 
-		logrus.Infof("Creating directory %s with uid %d and gid %d", config.WorkingDir, uid, gid)
+		//logrus.Infof("Creating directory %s with uid %d and gid %d", config.WorkingDir, uid, gid)
 		w.snapshotFiles = append(w.snapshotFiles, config.WorkingDir)
 		if err := mkdirAllWithPermissions(config.WorkingDir, 0755, uid, gid); err != nil {
 			return errors.Wrapf(err, "creating workdir %s", config.WorkingDir)

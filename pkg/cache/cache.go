@@ -238,11 +238,11 @@ func cachedImageFromPath(p string) (v1.Image, error) {
 
 	var mfst *v1.Manifest
 	if _, err := os.Stat(mfstPath); err != nil {
-		logrus.Debugf("Manifest does not exist at file: %s", mfstPath)
+		logrus.Infof("Manifest does not exist at file: %s", mfstPath)
 	} else {
 		mfst, err = mfstFromPath(mfstPath)
 		if err != nil {
-			logrus.Debugf("Error parsing manifest from file: %s", mfstPath)
+			logrus.Infof("Error parsing manifest from file: %s", mfstPath)
 		} else {
 			logrus.Infof("Found manifest at %s", mfstPath)
 		}

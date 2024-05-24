@@ -205,7 +205,7 @@ func (t *Tar) checkHardlink(p string, i os.FileInfo) (bool, string) {
 			inode := stat.Ino
 			if original, exists := t.hardlinks[inode]; exists && original != p {
 				hardlink = true
-				logrus.Debugf("%s inode exists in hardlinks map, linking to %s", p, original)
+				logrus.Infof("%s inode exists in hardlinks map, linking to %s", p, original)
 				linkDst = original
 			} else {
 				t.hardlinks[inode] = p

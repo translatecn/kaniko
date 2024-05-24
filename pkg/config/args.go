@@ -35,7 +35,7 @@ func (b *multiArg) String() string {
 
 // The second method is Set(value string) error
 func (b *multiArg) Set(value string) error {
-	logrus.Debugf("Appending to multi args %s", value)
+	logrus.Infof("Appending to multi args %s", value)
 	*b = append(*b, value)
 	return nil
 }

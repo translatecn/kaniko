@@ -1,4 +1,0 @@
-FROM debian:10.13
-
-# Testing that any HTTP failure is handled properly
-ADD https://httpstat.us/404 .
